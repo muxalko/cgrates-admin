@@ -1,0 +1,382 @@
+<div [@routerTransition]>
+	<app-page-header [heading]="'Accounts'" [icon]="'fa-user'"></app-page-header>
+	<div class="row">
+		<div class="col-xl-2 col-lg-3 col-sm-6">
+			<form class="form-inline my-2 my-lg-0">
+				<input class="form-control mr-sm-2" type="text" placeholder="{{'msisdn'}}" [(ngModel)]="search.Account" name="searchAccount">
+				<button class="btn btn-secondary" type="button" (click)="getAcc(search.Tenant, search.Account)">
+					<i class="fa fa-search"></i>
+				</button>
+			</form>
+			<!-- div class="form-group input-group">
+			
+			
+				<span class="input-group-addon">Account:</span>
+				 <input type="text" class="form-control" [(ngModel)]="search.Tenant" name="searchTenant" placeholder="Tenant"> 
+				 <input type="text" class="form-control" [(ngModel)]="search.Account" name="searchAccount" placeholder="Msisdn">
+				
+				<span class="input-group-btn">
+					<button class="btn btn-secondary" type="button" (click)="getAcc(search.Tenant, search.Account)">
+						<i class="fa fa-search"></i>
+					</button>
+				</span>
+			</div-->
+		</div>
+	</div>
+</div>
+<div class="row" *ngIf="accounts.length > 0">
+	<div class="col col-sm-6">
+		<div class="card mt-3">
+			<div class="card-header">Accounts</div>
+			<div class="card-body">
+				<div class="card card-block">
+					<table class="table table-striped table-bordered table-hover">
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>ID</th>
+								<th>Balances</th>
+								<th>Disabled</th>
+								<!-- th>AllowNegative</th-->
+							</tr>
+						</thead>
+						<tbody>
+							<tr *ngFor="let item of accounts; let i = index" (click)="openItem(item)">
+								<th>{{i+1}}</th>
+								<th scope="row">{{item.ID}}</th>
+								<td>
+									<div *ngFor="let key of item?.BalanceMap | keys">
+										<div [ngSwitch]="key?.key">
+											<a *ngFor="let balance of key?.value"> <span class="col-xs-2" *ngSwitchCase="'*monetary'"><i class="fa fa-ils">{{balance.ID}}</i>&nbsp;{{balance.Value}}NIS</span> <span class="col-xs-2" *ngSwitchCase="'*voice'"><i class="fa fa-phone">{{balance.ID}}</i>&nbsp;{{balance.Value
+													| voice}}</span> <span class="col-xs-2" *ngSwitchCase="'*sms'"><i class="fa fa-envelope-o">{{balance.ID}}</i>&nbsp;{{balance.Value}}</span> <span class="col-xs-2" *ngSwitchCase="'*data'"><i class="fa fa-globe">{{balance.ID}}</i>&nbsp;{{balance.Value | data}}</span> <span
+												class="col-xs-2" *ngSwitchCase="'*generic'"><i class="fa fa-ils">{{balance.ID}}</i>&nbsp;{{balance.Value}}</span>
+											</a>
+										</div>
+									</div>
+								</td>
+								<td>{{item.Disabled}}</td>
+								<!-- td>{{item.AllowNegative}}</td-->
+							</tr>
+						</tbody>
+					</table>
+					<ngb-pagination [collectionSize]="10" [(page)]="defaultPagination"></ngb-pagination>
+					<div class="alert alert-info">
+						<b>Current page: </b>{{defaultPagination}}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="col col-sm-6">
+		<div class="row" *ngIf="currentItem?.ID">
+			<div class="col-xl-6 col-lg-6">
+				<div class="card bg-light mb-3">
+					<div class="card-header">Account Details</div>
+					<div class="card-body">
+						<div class="col-xs-3">
+							<i class="fa fa-user fa-5x"></i>
+							<div>ID: {{currentItem.ID}}</div>
+						</div>
+						<div class="col-xs-9 text-xs-right">
+							<div>Disabled: {{currentItem.Disabled}}</div>
+							<button class="btn btn-primary" (click)="editAccount()">Edit</button>
+						</div>
+					</div>
+					<div class="card-footer">
+						<div class="d-inline-block dropdown" ngbDropdown #myDrop="ngbDropdown">
+							<button class="btn btn-outline-primary" ngbDropdownToggle>
+								<i class="fa fa-gear"></i>
+							</button>
+							<div ngbDropdownMenu>
+								<button (click)="getCdrs()" class="dropdown-item">
+									<i class="fa fa-arrow-circle-right"></i> Get CDRs
+								</button>
+								<button (click)="GetAccountActionPlan()" class="dropdown-item">
+									<i class="fa fa-arrow-circle-right"></i> Get ActionPlan
+								</button>
+								<button (click)="GetActiveSessions()" class="dropdown-item">
+									<i class="fa fa-arrow-circle-right"></i> Get ActiveSessions
+								</button>
+								<button class="dropdown-item">
+									<i class="fa fa-times"></i> Delete account (disabled)
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-xl-6 col-lg-6">
+				<div *ngIf="accountActionPlan.length > 0">
+					<div class="card card-default">
+						<div class="card-header">
+							<i class="fa fa-bell fa-fw"></i> ActionPlan
+						</div>
+						<div class="panel-body">
+							<div class="list-group">
+								<div *ngFor="let item of accountActionPlan">
+									<a href="javascript:;" class="list-group-item"> <span class="label label-success">{{item.ActionPlanId}}</span> {{item.ActionsId}} <span class="pull-right text-muted small"><em>{{item.NextExecTime}}</em> </span>
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="card mt-3" *ngIf="currentItem?.BalanceMap">
+			<div class="card-header">Balances</div>
+			<div class="card-body">
+				<div class="row">
+					<div *ngFor="let key of currentItem?.BalanceMap | keys">
+						<div [ngSwitch]="key?.key">
+							<div class="card text-white {{getBalanceStyle(key.key)}}">
+								<div class="card-header">
+									<div class="row">
+										<div class="col-xs-3" *ngSwitchCase="'*monetary'">
+											<i class="fa fa-ils fa-2x"></i>
+										</div>
+										<div class="col-xs-3" *ngSwitchCase="'*voice'">
+											<i class="fa fa-phone fa-2x"></i>
+										</div>
+										<div class="col-xs-3" *ngSwitchCase="'*sms'">
+											<i class="fa fa-envelope-o fa-2x"></i>
+										</div>
+										<div class="col-xs-3" *ngSwitchCase="'*data'">
+											<i class="fa fa-globe fa-2x"></i>
+										</div>
+										<div class="col-xs-3" *ngSwitchCase="'*generic'">
+											<i class="fa fa-ils fa-2x"></i>
+										</div>
+										<div class="col-xs-6 text-xs-right">
+											<div class="row" *ngFor="let balance of key?.value">
+												<div class="d-inline-block dropdown" ngbDropdown #myDrop="ngbDropdown">
+													<button class="btn btn-outline-primary" ngbDropdownToggle>Details</button>
+													<div ngbDropdownMenu>
+														<div class="table-responsive">
+															<table class="table">
+																<tbody>
+																	<tr *ngIf="balance?.ID !== ''">
+																		<th scope="row">ID</th>
+																		<td><span>{{balance.ID}}</span></td>
+																	</tr>
+																	<!-- tr *ngIf="balance?.Uuid !== ''"><th>Uuid</th><td><span>{{balance.Uuid}}</span></td></tr -->
+																	<tr *ngIf="balance?.Directions !== ''">
+																		<th>Directions</th>
+																		<td><span *ngFor="let key of balance.Directions | keys">{{key?.key}}:{{key?.value}}</span></td>
+																	</tr>
+																	<tr *ngIf="balance?.ExpirationDate !== '0001-01-01T00:00:00Z'">
+																		<th>ExpirationDate</th>
+																		<td><span>{{balance.ExpirationDate | date: 'yyyy/MM/dd HH:mm'}}</span></td>
+																	</tr>
+																	<tr *ngIf="balance?.Categories !== ''">
+																		<th>Categories</th>
+																		<td><span *ngFor="let key of balance.Categories | keys">{{key?.key}}:{{key?.value}}</span></td>
+																	</tr>
+																	<tr *ngIf="balance?.RatingSubject !== ''">
+																		<th>RatingSubject</th>
+																		<td><span>{{balance.RatingSubject}}</span></td>
+																	</tr>
+																	<tr *ngIf="balance?.Value !== ''">
+																		<th>Value</th>
+																		<td><span>{{balance.Value}}</span></td>
+																	</tr>
+																	<tr *ngIf="balance?.SharedGroups.length !== 0">
+																		<th>SharedGroups</th>
+																		<td><span *ngFor="let key of balance.SharedGroups | keys">{{key?.key}}:{{key?.value}}</span></td>
+																	</tr>
+																	<tr *ngIf="balance?.Timings !== []">
+																		<th>Timings</th>
+																		<td><span>{{balance.Timings}}</span></td>
+																	</tr>
+																	<tr *ngIf="balance?.TimingIDs !== ''">
+																		<th>SharedGroups</th>
+																		<td><span *ngFor="let key of balance.TimingIDs | keys">{{key?.key}}:{{key?.value}}</span></td>
+																	</tr>
+																	<tr *ngIf="balance?.Disabled !== ''">
+																		<th>Disabled</th>
+																		<td><span>{{balance.Disabled}}</span></td>
+																	</tr>
+																	<tr *ngIf="balance?.DestinationIDs.length !== 0">
+																		<th>DestinationIDs</th>
+																		<td><span *ngFor="let key of balance.DestinationIDs | keys">{{key?.key}}:{{key?.value}}</span></td>
+																	</tr>
+																	<tr *ngIf="balance?.Factor !== ''">
+																		<th>Factor</th>
+																		<td><span *ngFor="let key of balance.Factor | keys">{{key?.key}}:{{key?.value}}</span></td>
+																	</tr>
+																	<tr *ngIf="balance?.Blocker !== ''">
+																		<th>Blocker</th>
+																		<td><span>{{balance.Blocker}}</span></td>
+																	</tr>
+																</tbody>
+															</table>
+														</div>
+													</div>
+												</div>
+												<table class="table">
+													<tbody>
+														<tr *ngIf="balance?.ID !== ''">
+															<th scope="row">ID:</th>
+															<td><span>{{balance.ID}}</span></td>
+														</tr>
+														<tr *ngIf="balance?.Value !== ''">
+															<th scope="row">Value:</th>
+															<td><span class="col-xs-2" *ngSwitchCase="'*monetary'">{{balance.Value}}NIS</span> <span class="col-xs-2" *ngSwitchCase="'*voice'">{{balance.Value | voice}}</span> <span class="col-xs-2" *ngSwitchCase="'*sms'">{{balance.Value}}</span> <span class="col-xs-2"
+																*ngSwitchCase="'*data'">{{balance.Value | data}}</span> <span class="col-xs-2" *ngSwitchCase="'*generic'">{{balance.Value}}</span></td>
+														</tr>
+														<tr *ngIf="balance?.ExpirationDate !== '0001-01-01T00:00:00Z'">
+															<th scope="row">Expire at:</th>
+															<td><span>{{balance.ExpirationDate | date: 'yyyy/MM/dd HH:mm'}}</span></td>
+														</tr>
+														<!-- tr *ngIf="balance?.Categories !== ''">
+																<td><span *ngFor="let key of balance.Categories | keys">{{key?.key}}:{{key?.value}}</span></td>
+															</tr>
+															<tr *ngIf="balance?.RatingSubject !== ''">
+																<td><span>{{balance.RatingSubject}}</span></td>
+															</tr>
+															<tr *ngIf="balance?.DestinationIDs.length !== 0">
+																<td><span *ngFor="let key of balance.DestinationIDs | keys">{{key?.key}}:{{key?.value}}</span></td>
+															</tr-->
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="card-footer card-default">
+									<div class="d-inline-block dropdown" ngbDropdown #myDrop="ngbDropdown">
+										<button class="btn btn-outline-primary" ngbDropdownToggle>
+											<i class="fa fa-gear"></i>
+										</button>
+										<div ngbDropdownMenu>
+											<button (click)="getCdrs(key?.key)" class="dropdown-item">
+												<i class="fa fa-arrow-circle-right"></i> Get {{key?.key}} CDRs
+											</button>
+											<button (click)="removeBalances(key?.key)" class="dropdown-item">
+												<i class="fa fa-times"></i> Remove all {{key?.key}} balances
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row" *ngIf="accountActiveSessions?.length > 0">
+	<data-table id="accountActiveSessions-grid" headerTitle="Account Active Sessions" [items]="accountActiveSessions" [itemCount]="accountActiveSessionsCount" (reload)="reloadActiveSessions($event)" [limit]="10" [sortBy]="'AnswerTime'" [sortAsc]="false" [pagination]="true"
+		[selectColumn]="false" [indexColumn]="false" [multiSelect]="false" [substituteRows]="false" [expandableRows]="true" [translations]="translations" [indexColumnHeader]="'#'" [selectOnRowClick]="true" [rowColors]="rowColors"> <ng-template #dataTableExpand let-item="item">
+	<div [textContent]="item.ExtraFields" style="padding: 5px; color: gray"></div>
+	</ng-template> <ng-template let-row="row" let-expanded="expanded" ngx-datatable-cell-template> <a href="javascript:void(0)" [class.datatable-icon-right]="!expanded" [class.datatable-icon-down]="expanded" title="Expand/Collapse Row" (click)="toggleExpandRow(row)"> </a> </ng-template> <data-table-column
+		[property]="'AnswerTime'" [header]="'AnswerTime'" [sortable]="true" [resizable]="true" [visible]="true"></data-table-column> <data-table-column [property]="'SetupTime'" [header]="'SetupTime'" [sortable]="true" [resizable]="true" [visible]="false"></data-table-column> <data-table-column
+		[property]="'CGRID'" [header]="'CGRID'" [sortable]="true" [resizable]="true" [visible]="false"></data-table-column> <data-table-column [property]="'RunID'" [header]="'RunID'" [sortable]="true" [resizable]="true" [visible]="false"></data-table-column> <data-table-column
+		[property]="'SMId'" [header]="'SMId'" [sortable]="true" [resizable]="true" [visible]="true"> </data-table-column> <data-table-column [property]="'CdrHost'" [header]="'CdrHost'" [sortable]="true" [resizable]="true" [visible]="true"> </data-table-column> <data-table-column
+		[property]="'CdrSource'" [header]="'CdrSource'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column [property]="'OriginID'" [header]="'OriginID'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column
+		[property]="'TOR'" [header]="'TOR'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column [property]="'ReqType'" [header]="'ReqType'" [sortable]="true" [resizable]="true" [visible]="false"></data-table-column> <data-table-column
+		[property]="'SMConnId'" [header]="'SMConnId'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column [property]="'Tenant'" [header]="'Tenant'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column
+		[property]="'Category'" [header]="'Category'" [sortable]="true" [resizable]="true" [visible]="true"> </data-table-column> <data-table-column [property]="'Account'" [header]="'Account'" [sortable]="true" [resizable]="true" [visible]="true"> </data-table-column> <data-table-column
+		[property]="'Subject'" [header]="'Subject'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column [property]="'Destination'" [header]="'Destination'" [sortable]="true" [resizable]="true" [visible]="true"> </data-table-column> <data-table-column
+		[property]="'Usage'" [header]="'Usage'" [sortable]="true" [resizable]="true" [visible]="true"> </data-table-column> <data-table-column [property]="'LoopIndex'" [header]="'LoopIndex'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column
+		[property]="'DurationIndex'" [header]="'DurationIndex'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column [property]="'MaxRate'" [header]="'MaxRate'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column
+		[property]="'MaxRateUnit'" [header]="'MaxRateUnit'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column [property]="'MaxCostSoFar'" [header]="'MaxCostSoFar'" [sortable]="true" [resizable]="true" [visible]="true" [cellColors]="cellColor">
+	</data-table-column> <data-table-column [property]="'ExtraFields'" [header]="'ExtraFields'" [sortable]="true" [resizable]="true" [visible]="false"> <ng-template #dataTableExpand let-item="extra"> <span>TEST {{extra}}</span> </ng-template> </data-table-column> </data-table>
+	<div style="margin-top: 10px">
+		<b>Selected:</b> <span *ngIf="activesessionsTable?.selectedRow == null"><i>No item selected</i></span> <span [textContent]="activesessionsTable?.selectedRow && activesessionsTable?.selectedRow.item.CGRID"></span>
+	</div>
+</div>
+<div class="row" *ngIf="cdrs?.length > 0">
+	<data-table id="cdrs-grid" headerTitle="CDRs" [items]="cdrs" [itemCount]="cdrCount" (reload)="reloadCdrs($event)" [limit]="paginationLimit" [sortBy]="'SetupTime'" [sortAsc]="false" [pagination]="true" [selectColumn]="false" [indexColumn]="false" [multiSelect]="false"
+		[substituteRows]="false" [expandableRows]="true" [translations]="translations" [indexColumnHeader]="'#'" [selectOnRowClick]="true" [rowColors]="rowColors"> <ng-template #dataTableExpand let-item="item">
+	<div [textContent]="item.CostDetails" style="padding: 5px; color: gray"></div>
+	</ng-template> <data-table-column [property]="'AnswerTime'" [header]="'AnswerTime'" [sortable]="true" [resizable]="true" [visible]="true" v></data-table-column> <data-table-column [property]="'SetupTime'" [header]="'SetupTime'" [sortable]="true" [resizable]="true" [visible]="false" [width]="50"></data-table-column>
+	<data-table-column [property]="'CGRID'" [header]="'CGRID'" [sortable]="true" [resizable]="true" [visible]="false"></data-table-column> <data-table-column [property]="'RunID'" [header]="'RunID'" [sortable]="true" [resizable]="true" [visible]="false"></data-table-column> <data-table-column
+		[property]="'OrderID'" [header]="'OrderID'" [sortable]="true" [cellColors]="cellColor" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column [property]="'OriginHost'" [header]="'OriginHost'" [sortable]="true" [resizable]="true" [visible]="true">
+	</data-table-column> <data-table-column [property]="'Source'" [header]="'Source'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column [property]="'OriginID'" [header]="'OriginID'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column
+		[property]="'ToR'" [header]="'ToR'" [sortable]="true" [resizable]="true" [visible]="true"> </data-table-column> <data-table-column [property]="'RequestType'" [header]="'RequestType'" [sortable]="true" [resizable]="true" [visible]="false"></data-table-column> <data-table-column
+		[property]="'Direction'" [header]="'Direction'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column [property]="'Tenant'" [header]="'Tenant'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column
+		[property]="'Category'" [header]="'Category'" [sortable]="true" [resizable]="true" [visible]="true"> </data-table-column> <data-table-column [property]="'Account'" [header]="'Account'" [sortable]="true" [resizable]="true" [visible]="true"> </data-table-column> <data-table-column
+		[property]="'Subject'" [header]="'Subject'" [sortable]="true" [resizable]="true" [visible]="true"> </data-table-column> <data-table-column [property]="'Destination'" [header]="'Destination'" [sortable]="true" [resizable]="true" [visible]="true"> </data-table-column> <data-table-column
+		[property]="'Usage'" [header]="'Usage'" [sortable]="true" [resizable]="true" [visible]="true"> </data-table-column> <data-table-column [property]="'Cost'" [header]="'Cost'" [sortable]="true" [resizable]="true" [visible]="true" [cellColors]="cellColor"> </data-table-column> <data-table-column
+		[property]="'Supplier'" [header]="'Supplier'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column [property]="'DisconnectCause'" [header]="'DisconnectCause'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column
+		[property]="'CostSource'" [header]="'CostSource'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column [property]="'ExtraInfo'" [header]="'ExtraInfo'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column
+		[property]="'Rated'" [header]="'Rated'" [sortable]="true" [resizable]="true" [visible]="false"> </data-table-column> <data-table-column [property]="'ExtraFields'" [header]="'ExtraFields'" [sortable]="true" [resizable]="true" [visible]="false"> <ng-template
+		#dataTableExpand let-item="extra"> <span>TEST {{extra}}</span> </ng-template> </data-table-column> <data-table-column [property]="'PDD'" [header]="'PDD'" [sortable]="true" [resizable]="true" [visible]="false"></data-table-column> <!--data-table-column
+				[property]="'CostDetails'"
+				[header]="'CostDetails'"
+				[sortable]="true">
+			</data-table-column--> </data-table>
+	<div style="margin-top: 10px">
+		<b>Selected:</b> <span *ngIf="cdrsTable?.selectedRow == null"><i>No item selected</i></span> <span [textContent]="cdrsTable?.selectedRow && cdrsTable?.selectedRow.item.CGRID"></span>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-md-12">
+		<div class="row">
+			<div class="col col-sm-6">
+				<div class="card mb-3">
+					<div class="card-header">Bar Chart</div>
+					<div class="card-body">
+						<canvas baseChart [datasets]="barChartData" [labels]="barChartLabels" [options]="barChartOptions" [legend]="barChartLegend" [chartType]="barChartType" (chartHover)="chartHovered($event)" (chartClick)="chartClicked($event)">
+                    </canvas>
+					</div>
+					<div class="card-footer">
+						<button class="btn btn-info btn-sm" (click)="randomize()">Update</button>
+					</div>
+				</div>
+			</div>
+			<div class="col col-sm-6">
+				<div class="card mb-3">
+					<div class="card-header">Doughnut Chart</div>
+					<div class="card-body">
+						<canvas baseChart height="180px" [data]="doughnutChartData" [labels]="doughnutChartLabels" [chartType]="doughnutChartType" (chartHover)="chartHovered($event)" (chartClick)="chartClicked($event)">
+                    </canvas>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col col-sm-6">
+				<div class="card mb-3">
+					<div class="card-header">Radar Chart</div>
+					<div class="card-body">
+						<canvas baseChart height="150px" [datasets]="radarChartData" [labels]="radarChartLabels" [chartType]="radarChartType" (chartHover)="chartHovered($event)" (chartClick)="chartClicked($event)">
+                    </canvas>
+					</div>
+				</div>
+			</div>
+			<div class="col col-sm-6">
+				<div class="card mb-3">
+					<div class="card-header">Pie Chart</div>
+					<div class="card-body">
+						<canvas baseChart height="150px" [data]="pieChartData" [labels]="pieChartLabels" [chartType]="pieChartType" (chartHover)="chartHovered($event)" (chartClick)="chartClicked($event)">
+                    </canvas>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col col-sm-6">
+				<div class="card mb-3">
+					<div class="card-header">Polar Area Chart</div>
+					<div class="card-body">
+						<canvas baseChart height="130px" [data]="polarAreaChartData" [labels]="polarAreaChartLabels" [legend]="polarAreaLegend" [chartType]="polarAreaChartType" (chartHover)="chartHovered($event)" (chartClick)="chartClicked($event)">
+                    </canvas>
+					</div>
+				</div>
+			</div>
+			<div class="col col-sm-6">
+				<div class="card mb-3">
+					<div class="card-header">Line Chart</div>
+					<div class="card-body">
+						<canvas baseChart height="130" [datasets]="lineChartData" [labels]="lineChartLabels" [options]="lineChartOptions" [colors]="lineChartColors" [legend]="lineChartLegend" [chartType]="lineChartType" (chartHover)="chartHovered($event)" (chartClick)="chartClicked($event)">
+                    </canvas>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

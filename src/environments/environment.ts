@@ -4,5 +4,8 @@
 // The list of which env maps to which file can be found in `.angular-cli.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  //rpcserviceurl: 'http://10.224.243.6:8000/jsonrpc'
+  //rpcserviceurl: 'http://10.224.228.188:2080/jsonrpc'
+  rpcserviceurl: 'http://10.224.243.40:2080/jsonrpc'
 };

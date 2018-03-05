@@ -1,61 +1,77 @@
-import { Component, OnInit } from '@angular/core';
-import { routerTransition } from '../../router.animations';
+import {Component, OnInit} from '@angular/core';
+import {routerTransition} from '../../router.animations';
+import {CGRatesService} from '../../shared/services/cgrates.service';
+import {LoggerService} from '../../shared/services/logger.service';
 
 @Component({
-    selector: 'app-dashboard',
-    templateUrl: './dashboard.component.html',
-    styleUrls: ['./dashboard.component.scss'],
-    animations: [routerTransition()]
+  selector: 'app-dashboard',
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.scss'],
+  animations: [routerTransition()]
 })
 export class DashboardComponent implements OnInit {
-    public alerts: Array<any> = [];
-    public sliders: Array<any> = [];
 
-    constructor() {
-        this.sliders.push(
-            {
-                imagePath: 'assets/images/slider1.jpg',
-                label: 'First slide label',
-                text:
-                    'Nulla vitae elit libero, a pharetra augue mollis interdum.'
-            },
-            {
-                imagePath: 'assets/images/slider2.jpg',
-                label: 'Second slide label',
-                text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
-            },
-            {
-                imagePath: 'assets/images/slider3.jpg',
-                label: 'Third slide label',
-                text:
-                    'Praesent commodo cursus magna, vel scelerisque nisl consectetur.'
-            }
-        );
+  public alerts: Array<any> = [];
+  public sliders: Array<any> = [];
 
-        this.alerts.push(
-            {
-                id: 1,
-                type: 'success',
-                message: `Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+  tpids: string[];
+  currentTPid: string;
+
+
+
+  constructor(
+    //private _router: Router,
+    private _cgratesService: CGRatesService,
+    private _logger: LoggerService) {
+
+
+    this.sliders.push(
+      {
+        imagePath: 'assets/images/slider1.jpg',
+        label: 'First slide label',
+        text:
+        'Nulla vitae elit libero, a pharetra augue mollis interdum.'
+      },
+      {
+        imagePath: 'assets/images/slider2.jpg',
+        label: 'Second slide label',
+        text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+      },
+      {
+        imagePath: 'assets/images/slider3.jpg',
+        label: 'Third slide label',
+        text:
+        'Praesent commodo cursus magna, vel scelerisque nisl consectetur.'
+      }
+    );
+
+    this.alerts.push(
+      {
+        id: 1,
+        type: 'success',
+        message: `Lorem ipsum dolor sit amet, consectetur adipisicing elit.
                 Voluptates est animi quibusdam praesentium quam, et perspiciatis,
                 consectetur velit culpa molestias dignissimos
                 voluptatum veritatis quod aliquam! Rerum placeat necessitatibus, vitae dolorum`
-            },
-            {
-                id: 2,
-                type: 'warning',
-                message: `Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+      },
+      {
+        id: 2,
+        type: 'warning',
+        message: `Lorem ipsum dolor sit amet, consectetur adipisicing elit.
                 Voluptates est animi quibusdam praesentium quam, et perspiciatis,
                 consectetur velit culpa molestias dignissimos
                 voluptatum veritatis quod aliquam! Rerum placeat necessitatibus, vitae dolorum`
-            }
-        );
-    }
+      }
+    );
+  }
 
-    ngOnInit() {}
+  ngOnInit() {
+    this.currentTPid = this._cgratesService.getTPid();
+    this._logger.info('Current TPID: ' + this.currentTPid);
+  }
 
-    public closeAlert(alert: any) {
-        const index: number = this.alerts.indexOf(alert);
-        this.alerts.splice(index, 1);
-    }
+  public closeAlert(alert: any) {
+    const index: number = this.alerts.indexOf(alert);
+    this.alerts.splice(index, 1);
+  }
 }

@@ -1,0 +1,123 @@
+<div class="modal-header">
+	<h4 class="modal-title">Details of {{currentItem?.Tenant}}:{{currentItem?.Account}}</h4>
+	<button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+		<span aria-hidden="true">&times;</span>
+	</button>
+</div>
+<div class="modal-body">
+	<form role="form">
+		<fieldset class="form-group">
+			<label>Text Input</label> <input class="form-control">
+			<p class="help-block">Example block-level help text here.</p>
+		</fieldset>
+		<fieldset class="form-group">
+			<label for="Tenant">Tenant: </label> <input [(ngModel)]="currentItem.Tenant" name="Tenant" type="text" class="form-control" placeholder="Tenant" required> <label for="Account">Account: </label> <input [(ngModel)]="currentItem.Account" name="Account" type="text"
+				class="form-control" placeholder="Account" required> <label class="control-label" for="ActionPlanIDs">ActionPlanIDs: </label> <select multiple name="ActionPlanIDs" class="form-control" [(ngModel)]="currentItem.ActionPlanIDs" name="ActionPlanIDs">
+				<option *ngFor="let actionplansId of actionplansIds let i = index" value="{{actionplansId}}">{{actionplansId}}</option>
+			</select> <label for="ActionPlansOverwrite">ActionPlansOverwrite: </label> <input [(ngModel)]="currentItem.ActionPlansOverwrite" name="ActionPlansOverwrite" type="checkbox" class="form-control" placeholder="ActionPlansOverwrite">
+		</fieldset>
+		<div class="form-group">
+			<label>Static Control</label>
+			<p class="form-control-static">email@example.com</p>
+		</div>
+		<fieldset class="form-group">
+			<label for="exampleInputFile">File input</label> <input type="file" class="form-control-file" id="exampleInputFile">
+		</fieldset>
+		<fieldset class="form-group">
+			<label>Text area</label>
+			<textarea class="form-control" rows="3"></textarea>
+		</fieldset>
+		<div class="form-group">
+			<label>Checkboxes</label>
+			<div class="checkbox">
+				<label> <input type="checkbox" value=""> Checkbox 1
+				</label>
+			</div>
+			<div class="checkbox">
+				<label> <input type="checkbox" value=""> Checkbox 2
+				</label>
+			</div>
+			<div class="checkbox">
+				<label> <input type="checkbox" value=""> Checkbox 3
+				</label>
+			</div>
+		</div>
+		<div class="form-group">
+			<label>Inline Checkboxes</label> <label class="checkbox-inline"> <input type="checkbox">1
+			</label> <label class="checkbox-inline"> <input type="checkbox">2
+			</label> <label class="checkbox-inline"> <input type="checkbox">3
+			</label>
+		</div>
+		<fieldset class="form-group">
+			<label>Radio Buttons</label>
+			<div class="radio">
+				<label> <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked=""> Radio 1
+				</label>
+			</div>
+			<div class="radio">
+				<label> <input type="radio" name="optionsRadios" id="optionsRadios2" value="option2"> Radio 2
+				</label>
+			</div>
+			<div class="radio">
+				<label> <input type="radio" name="optionsRadios" id="optionsRadios3" value="option3"> Radio 3
+				</label>
+			</div>
+		</fieldset>
+		<fieldset class="form-group">
+			<label>Inline Radio Buttons</label> <label class="radio-inline"> <input type="radio" name="optionsRadiosInline" id="optionsRadiosInline1" value="option1" checked="">1
+			</label> <label class="radio-inline"> <input type="radio" name="optionsRadiosInline" id="optionsRadiosInline2" value="option2">2
+			</label> <label class="radio-inline"> <input type="radio" name="optionsRadiosInline" id="optionsRadiosInline3" value="option3">3
+			</label>
+		</fieldset>
+		<div class="form-group">
+			<label>Selects</label> <select class="form-control">
+				<option>1</option>
+				<option>2</option>
+				<option>3</option>
+				<option>4</option>
+				<option>5</option>
+			</select>
+		</div>
+		<fieldset class="form-group">
+			<label>Multiple Selects</label> <select multiple="" class="form-control">
+				<option>1</option>
+				<option>2</option>
+				<option>3</option>
+				<option>4</option>
+				<option>5</option>
+			</select>
+		</fieldset>
+		<button type="submit" class="btn btn-secondary">Submit Button</button>
+		<button type="reset" class="btn btn-secondary">Reset Button</button>
+	</form>
+	<form>
+		<div class="form-inline">
+			<div class="col-auto"></div>
+			<div class="col-auto"></div>
+			<div class="col-auto"></div>
+			<div class="col-auto"></div>
+			<div class="col-auto">
+				<label class="control-label" for="ActionTriggerIDs">ActionTriggerIDs: </label> <select multiple name="ActionTriggerIDs" class="form-control" [(ngModel)]="currentItem.ActionTriggerIDs" name="ActionTriggerIDs">
+					<option *ngFor="let actiontriggersId of actiontriggersIds let i = index" value="{{actiontriggersId}}">{{actiontriggersId}}</option>
+				</select>
+			</div>
+			<div class="col-auto">
+				<label for="ActionTriggerOverwrite">ActionTriggerOverwrite: </label> <input [(ngModel)]="currentItem.ActionTriggerOverwrite" name="ActionTriggerOverwrite" type="checkbox" class="form-control" placeholder="ActionTriggerOverwrite">
+			</div>
+			<div class="col-auto">
+				<label for="AllowNegative">AllowNegative: </label> <input [(ngModel)]="currentItem.AllowNegative" name="AllowNegative" type="checkbox" class="form-control" placeholder="AllowNegative">
+			</div>
+			<div class="col-auto">
+				<label for="Disabled">Disabled: </label> <input [(ngModel)]="currentItem.Disabled" name="Disabled" type="checkbox" class="form-control" placeholder="Disabled">
+			</div>
+			<div class="col-auto">
+				<label for="ReloadScheduler">ReloadScheduler: </label> <input [(ngModel)]="currentItem.ReloadScheduler" name="ReloadScheduler" type="checkbox" class="form-control" placeholder="ReloadScheduler">
+			</div>
+		</div>
+	</form>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-primary" (click)="saveAccount()" >Save</button>
+	<button type="button" class="btn btn-danger" (click)="removeAccount()">Remove</button>
+	<button type="button" class="btn btn-outline-dark" (click)="activeModal.close('Close click')">Close</button>
+</div>

@@ -1,5 +1,10 @@
 <app-header></app-header>
 <app-sidebar></app-sidebar>
 <section class="main-container">
-    <router-outlet></router-outlet>
+	<div *ngIf="msgs">
+		<p *ngFor="let log of msgs">
+			<ngb-alert [type]="log.severity" (close)="closeAlert(log)"> <strong>{{log.summary}}</strong> {{log.detail}} </ngb-alert>
+		</p>
+	</div>
+	<router-outlet></router-outlet>
 </section>
